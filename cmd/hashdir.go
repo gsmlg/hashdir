@@ -1,21 +1,34 @@
 package main
 
 import (
-    "os"
-    "fmt"
-    dirhash "golang.org/x/mod/sumdb/dirhash"
+	"os"
+	"io"
+	"io/ioutil"
+	"bytes"
+	"fmt"
+	dirhash "golang.org/x/mod/sumdb/dirhash"
 )
 
+func check(e error) {
+    if e != nil {
+        panic(e)
+    }
+}
+
+func open(p string) (io.ReadCloser, error) {
+	dat, err := ioutil.ReadFile("./assets/" + p)
+	check(err)
+
+	return ioutil.NopCloser(bytes.NewReader(dat)), nil
+}
 
 func main() {
-    str, err := dirhash.HashDir("assets", "./", dirhash.Hash1)
+	files, err := dirhash.DirFiles("assets", "./");
+	check(err)
 
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "\033[31mError: %d\033[0m", err)
-        os.Exit(1)
-    } else {
-        fmt.Fprintf(os.Stdout, "%s", str)
-        os.Exit(0)
-    }
+	str, err := dirhash.Hash1(files, open)
+	check(err)
+
+	fmt.Fprintf(os.Stdout, "%s", str)
 }
 
