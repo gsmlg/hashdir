@@ -32,7 +32,6 @@ func main() {
 	h := sha256.New()
 
 	for _, f := range files {
-		fmt.Println("file: ", f)
 		dat, err := ioutil.ReadFile("./assets/" + f)
 		check(err)
 		h.Write(dat)
@@ -40,7 +39,7 @@ func main() {
 
 	ha := h.Sum(nil)
 	encodHash := base64UrlSafeEncode(ha)
-	fmt.Fprintf(os.Stdout, "HASH: %s", encodHash)
+	fmt.Fprintf(os.Stdout, "%s", encodHash)
 	
 }
 
