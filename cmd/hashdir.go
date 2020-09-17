@@ -7,13 +7,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
-	dirhash "golang.org/x/mod/sumdb/dirhash"
+	"path/filepath"
 )
 
 func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+	if e != nil {
+		panic(e)
+	}
 }
 
 func base64UrlSafeEncode(source []byte) string {
@@ -26,20 +26,29 @@ func base64UrlSafeEncode(source []byte) string {
 }
 
 func main() {
-	files, err := dirhash.DirFiles("assets", "./");
-	check(err)
+
+	dir := os.Args[1]
 
 	h := sha256.New()
 
-	for _, f := range files {
-		dat, err := ioutil.ReadFile("./assets/" + f)
-		check(err)
-		h.Write(dat)
-	}
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, e error) error {
+		check(e)
+		name := info.Name()
+		if strings.HasPrefix(name, ".") {
+			return nil
+		}
+		if info.Mode().IsRegular() {
+			data, err := ioutil.ReadFile(path)
+			check(err)
+			h.Write(data)
+		}
+		return nil
+	})
+	check(err)
 
 	ha := h.Sum(nil)
 	encodHash := base64UrlSafeEncode(ha)
 	fmt.Fprintf(os.Stdout, "%s", encodHash)
-	
+
 }
 
